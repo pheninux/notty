@@ -10,8 +10,5 @@
         <module name="notty" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="notty" target="17" />
-    </bytecodeTargetLevel>
   </component>
 </project>

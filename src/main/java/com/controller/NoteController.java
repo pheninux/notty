@@ -3,6 +3,7 @@ package com.controller;
 import com.Exeption.NoItemFoundException;
 import com.model.Note;
 import com.model.NoteDto;
+import com.model.ResponseDto;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +15,7 @@ import org.springframework.web.client.HttpServerErrorException;
 import com.repository.NoteRepository;
 import com.service.NoteService;
 
+import java.io.File;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -28,10 +30,12 @@ public class NoteController {
 
     public final NoteService noteService;
     public final NoteRepository noteRepository;
+    public final ModelMapper modelMapper;
 
-    public NoteController(NoteService noteService, NoteRepository noteRepository) {
+    public NoteController(NoteService noteService, NoteRepository noteRepository, ModelMapper modelMapper) {
         this.noteService = noteService;
         this.noteRepository = noteRepository;
+        this.modelMapper = modelMapper;
     }
 
 
@@ -48,25 +52,26 @@ public class NoteController {
     }
 
     @RequestMapping(value = "/byContext", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<NoteDto>> findNoteByContext(@RequestBody String context) {
+    public ResponseEntity<ResponseDto> findNoteByContext(@RequestBody String val) {
 
-        LOGGER.info("[NoteController][notesByContext][RequestParam]: {}", context);
+        LOGGER.info("[NoteController][notesByContext][RequestParam]: {}", val);
 
+        List<Note> notes;
+        List<NoteDto> noteDtos = null;
+        ResponseDto responseDto = null;
         try {
-
-            List<Note> notes = noteRepository.findNoteByContext(context);
+            notes = noteRepository.findAllByContextLikeOrDescriptionLike("%" + val + "%", "%" + val + "%");
             if (notes.size() == 0 || notes.isEmpty()) {
-                throw new NoItemFoundException();
+                return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
             }
-            return new ResponseEntity<>(Arrays.stream(new ModelMapper()
-                    .map(noteRepository
-                            .findNoteByContext(context)
-                            .stream()
-                            .sorted(Comparator
-                                    .comparing(Note::getDate)), NoteDto[].class)).toList(), HttpStatus.OK);
+            noteDtos = Arrays.stream(modelMapper.map(notes, NoteDto[].class)).toList();
+            List<File> files = noteService.findFileByContext(val);
+            responseDto = new ResponseDto(noteDtos, files);
         } catch (Exception e) {
-            throw new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR);
+            LOGGER.error("[NoteController][notesByContext][ERROR]: {}", e.getMessage());
         }
+
+        return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
 
 }
