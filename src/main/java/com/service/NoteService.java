@@ -5,6 +5,7 @@ import com.itextpdf.kernel.pdf.PdfPage;
 import com.itextpdf.kernel.pdf.PdfReader;
 import com.itextpdf.kernel.pdf.canvas.parser.PdfTextExtractor;
 import com.model.Note;
+import com.utils.TaskManager;
 import com.utils.Utils;
 import org.aspectj.weaver.ast.Not;
 
@@ -14,11 +15,13 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 public interface NoteService {
 
 
     default public List<File> findFileByContext(String val) throws Exception {
+
         PdfReader pdfReader = null;
         PdfDocument pdfDocument;
         int nbrPage = 0;
@@ -27,21 +30,17 @@ public interface NoteService {
         /*** get all file directory ***/
 
         File[] files = dir.listFiles();
+        CountDownLatch countDownLatch = new CountDownLatch(files.length);
         if (files.length > 1) {
             for (int i = 0; i < files.length; i++) {
                 pdfReader = new PdfReader(files[i]);
                 pdfDocument = new PdfDocument(pdfReader);
                 nbrPage = pdfDocument.getNumberOfPages();
-                for (int j = 1; j <= nbrPage; j++) {
-                    var page = pdfDocument.getPage(j);
-                    if (new Utils().pdfPageContains(val, page)) {
-                        filesResult.add(files[i]);
-                        System.out.println("yes  contain it at page nbr => " + j);
-                        break;
-                    }
-                }
+                Thread thread = new Thread(new TaskManager(pdfDocument, nbrPage, i, countDownLatch, val, filesResult, files));
+                thread.start();
             }
         }
+
         if (filesResult.isEmpty() || filesResult.size() == 0) {
             throw new Exception("NO CONTENT FOUND");
         }
