@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+</head>
+<body>
+<!-- Exemple avec Materialize -->
+<style>
+  .search {
+    padding: 50px;
+    border: none;
+    border-radius: 20px;
+    box-shadow: none;
+    background-color: #e33131;
+    font-size: 16px;
+    width: 150px;
+  }
+</style>
+<form>
+  <input type="text" name="search" class="search" placeholder="Recherchez une note">
+  <button type="submit">Rechercher</button>
+</form>
+<form>
+  <div class="input-field">
+    <input type="text" name="note_title" id="note_title">
+    <label for="note_title">Titre de la note</label>
+  </div>
+  <div class="input-field">
+    <textarea name="note_content" id="note_content" class="materialize-textarea"></textarea>
+    <label for="note_content">Contenu de la note</label>
+  </div>
+  <div class="input-field">
+    <select name="note_category">
+      <option value="" disabled selected hidden>Choisissez une catégorie</option>
+      <option value="travail">Travail</option>
+      <option value="personnel">Personnel</option>
+      <option value="autre">Autre</option>
+    </select>
+    <label>Catégorie</label>
+  </div>
+  <button class="btn waves-effect waves-light" type="submit" name="action">Ajouter la note</button>
+</form>
+
+</body>
+</html>
